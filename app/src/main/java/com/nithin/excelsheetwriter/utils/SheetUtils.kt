@@ -12,28 +12,34 @@ import org.apache.poi.ss.usermodel.Workbook
 object SheetUtils {
 
     private var sheet: Sheet? = null
-    private const val EXCEL_SHEET_NAME = "SheetNameHere"
+    const val EXCEL_SHEET_NAME = "SheetNameHere"
+    private const val EMPTY = "-"
+    private val arrayOfRows: ArrayList<Row> = ArrayList()
 
-    private fun createWorkBook(workBookName: String): Workbook {
-        return HSSFWorkbook()
+    //create workbook
+    private val workbook = createWorkBookAndSheet(EXCEL_SHEET_NAME)
+
+    private fun createWorkBookAndSheet(sheetNameHere: String): Workbook {
+        val workbook = HSSFWorkbook()
+        sheet = workbook.createSheet(sheetNameHere)
+        return workbook
     }
 
-    fun addRowToSheet(rowNo: Int): Row? {
+    private fun addRowToSheet(rowNo: Int): Row? {
         return sheet?.createRow(rowNo)
     }
 
-    fun setupSheet() {
-        //create workbook
-        val workbook = createWorkBook(EXCEL_SHEET_NAME)
-        val row0 = addRowToSheet(rowNo = 0)
-        val cellStyle = workbook.setupCellStyle()
-        // Creating a cell and assigning it to a row
-        val cell1 = row0?.createCell(0);
-        // Setting Value and Style to the cell
-        cell1?.setCellValue("First Cell")
-        cell1?.cellStyle = cellStyle
+    fun setupSheet(noOfRows: Int = 2) {
+        for (i in 0..noOfRows) {
+            addRowToSheet(rowNo = i)/*?.let {
+                arrayOfRows.add(it)
+            }*/
+        }
     }
 
+    /**
+     * change style based on requirement for columns or rows
+     */
     private fun Workbook.setupCellStyle(): CellStyle? {
         val cellStyle = createCellStyle()
         cellStyle.fillForegroundColor = HSSFColor.AQUA.index;
@@ -42,8 +48,24 @@ object SheetUtils {
         return cellStyle
     }
 
-    fun addTitleColumns(columnNames: ArrayList<String>) {
+    /**
+     * row number for column is always 0,
+     * defaut column number is always 0
+     */
+    fun addColumnName(columnNo: Int = 0, columnName: String = EMPTY) {
+        setupValueForCell(rowNo = 0, cellNo = columnNo, cellValue = columnName)
+    }
 
+    fun addRowValue(rowNo: Int = 1, rowValues: ArrayList<String>) {
+        rowValues.forEachIndexed { index, str ->
+            setupValueForCell(rowNo, cellNo = index, cellValue = str)
+        }
+    }
+
+    private fun setupValueForCell(rowNo: Int = 0, cellNo: Int = 0, cellValue: String = EMPTY) {
+        val cell = sheet?.getRow(rowNo)?.createCell(cellNo)
+        cell?.cellStyle = workbook.setupCellStyle()
+        cell?.setCellValue(cellValue)
     }
 
 }
